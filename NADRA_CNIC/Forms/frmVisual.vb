@@ -64,6 +64,8 @@ Public Class frmVisual
             cmbEffect.Items.Add(name)
         Next
         cmbEffect.SelectedIndex = 0
+        pnlRight.AutoScroll = True
+        UpdateTrackbarForEffect()
 
         cmbCamera.SelectedIndex = 0
         tmrFrame.Stop()
@@ -77,9 +79,56 @@ Public Class frmVisual
         End If
 
         tipVisual.SetToolTip(btnStart, "Start streaming from the selected camera")
-        tipVisual.SetToolTip(btnCapture, "Save the original frame and attach it to the citizen record")
+        tipVisual.SetToolTip(btnCapture, "Save the frame and attach it to the citizen record")
         tipVisual.SetToolTip(trkParam, "Kernel / threshold / blur intensity for the selected effect")
         tipVisual.SetToolTip(chkFace, "Highlight faces with the OpenCV Haar cascade")
+    End Sub
+
+    Private Sub UpdateTrackbarForEffect()
+        Select Case EffectName()
+            Case "Gaussian Blur"
+                lblParam.Text = "Blur kernel size (odd)"
+                lblParam.Visible = True
+                trkParam.Visible = True
+                lblParamVal.Visible = True
+                trkParam.Minimum = 1
+                trkParam.Maximum = 31
+                trkParam.TickFrequency = 2
+                trkParam.Value = Math.Max(1, Math.Min(31, trkParam.Value))
+            Case "Canny Edges"
+                lblParam.Text = "Hysteresis low threshold"
+                lblParam.Visible = True
+                trkParam.Visible = True
+                lblParamVal.Visible = True
+                trkParam.Minimum = 10
+                trkParam.Maximum = 150
+                trkParam.TickFrequency = 10
+                trkParam.Value = Math.Max(10, Math.Min(150, If(trkParam.Value < 10, 50, trkParam.Value)))
+            Case "Sharpen"
+                lblParam.Text = "Sharpen intensity factor"
+                lblParam.Visible = True
+                trkParam.Visible = True
+                lblParamVal.Visible = True
+                trkParam.Minimum = 1
+                trkParam.Maximum = 20
+                trkParam.TickFrequency = 2
+                trkParam.Value = Math.Max(1, Math.Min(20, If(trkParam.Value > 20, 5, trkParam.Value)))
+            Case "Threshold (B/W)"
+                lblParam.Text = "Cut-off threshold (0-255)"
+                lblParam.Visible = True
+                trkParam.Visible = True
+                lblParamVal.Visible = True
+                trkParam.Minimum = 10
+                trkParam.Maximum = 240
+                trkParam.TickFrequency = 20
+                trkParam.Value = Math.Max(1, Math.Min(240, If(trkParam.Value < 10, 128, trkParam.Value)))
+            Case Else
+                lblParam.Text = "No adjustable parameters"
+                lblParam.Visible = True
+                trkParam.Visible = False
+                lblParamVal.Visible = False
+        End Select
+        lblParamVal.Text = trkParam.Value.ToString()
     End Sub
 
     Private Function EffectName() As String
@@ -230,6 +279,7 @@ Public Class frmVisual
     ' ------------------------------------------------------------------ effect controls
 
     Private Sub cmbEffect_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbEffect.SelectedIndexChanged
+        UpdateTrackbarForEffect()
         If Not tmrFrame.Enabled Then RenderStill()
     End Sub
 
@@ -253,8 +303,15 @@ Public Class frmVisual
     ' ------------------------------------------------------------------ capturing
 
     Private Sub btnCapture_Click(sender As Object, e As EventArgs) Handles btnCapture.Click
-        If _rawFrame Is Nothing Then
-            MessageBox.Show(Me, "Start the camera first so a frame can be captured.",
+        Dim frameToSave As Mat = Nothing
+        If _rawFrame IsNot Nothing AndAlso Not _rawFrame.Empty() Then
+            frameToSave = _rawFrame
+        ElseIf _stillFrame IsNot Nothing AndAlso Not _stillFrame.Empty() Then
+            frameToSave = _stillFrame
+        End If
+
+        If frameToSave Is Nothing Then
+            MessageBox.Show(Me, "Start the camera or open an image first so a photo can be captured.",
                             "Capture", MessageBoxButtons.OK, MessageBoxIcon.Information)
             Return
         End If
@@ -262,7 +319,7 @@ Public Class frmVisual
         Try
             Dim fileName As String = "capture_" & Format(Now, "yyyyMMdd_HHmmss") & ".jpg"
             Dim target As String = Path.Combine(AppPaths.PhotosFolder, fileName)
-            VisionEngine.SaveFrame(_rawFrame, target)
+            VisionEngine.SaveFrame(frameToSave, target)
 
             lblState.BackColor = UiTheme.BrightGreen
             lblState.Text = "Photo captured and attached: " & fileName

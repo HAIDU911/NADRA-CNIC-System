@@ -142,6 +142,9 @@ Public Class frmMain
         created.MdiParent = Me
         created.Show()
         FitChild(created)
+        ' the first layout of the new window may still be pending, so fit it again
+        ' once the message loop is idle
+        created.BeginInvoke(New MethodInvoker(Sub() FitChild(created)))
         created.Activate()
         Return created
     End Function
@@ -352,7 +355,7 @@ Public Class frmMain
         If CitizenStore.ValidateCnic(mtbQuick.Text, message) Then
             lblVerifyResult.ForeColor = Color.FromArgb(0, 140, 60)
             lblVerifyResult.Text = "VALID CNIC - check digit verified"
-            Db.LogActivity(Session.Current.Username, "CNIC-VERIFY", "Validated " & mtbQuick.Text)
+            Db.LogActivity(If(Session.Current IsNot Nothing, Session.Current.Username, "system"), "CNIC-VERIFY", "Validated " & mtbQuick.Text)
         Else
             lblVerifyResult.ForeColor = Color.Firebrick
             lblVerifyResult.Text = message
@@ -481,7 +484,7 @@ Public Class frmMain
         Dim answer As DialogResult = MessageBox.Show(Me, "Sign out and return to the login screen?",
                                                      "Logout", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
         If answer <> DialogResult.Yes Then Return
-        Db.LogActivity(Session.Current.Username, "LOGOUT", "Officer signed out.")
+        Db.LogActivity(If(Session.Current IsNot Nothing, Session.Current.Username, "system"), "LOGOUT", "Officer signed out.")
         Session.Current = Nothing
         Application.Restart()
     End Sub

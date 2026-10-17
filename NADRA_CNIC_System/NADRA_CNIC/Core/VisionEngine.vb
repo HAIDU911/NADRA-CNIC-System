@@ -129,7 +129,10 @@ Friend NotInheritable Class VisionEngine
                     Dim gray As New Mat()
                     Cv2.CvtColor(source, gray, ColorConversionCodes.BGR2GRAY)
                     Dim low As Integer = Math.Max(10, parameter)
-                    Cv2.Canny(gray, result, low, low * 3)
+                    Dim edges As New Mat()
+                    Cv2.Canny(gray, edges, low, low * 3)
+                    Cv2.CvtColor(edges, result, ColorConversionCodes.GRAY2BGR)
+                    edges.Dispose()
                     gray.Dispose()
 
                 Case "Gaussian Blur"
@@ -152,7 +155,10 @@ Friend NotInheritable Class VisionEngine
                     Dim gray As New Mat()
                     Cv2.CvtColor(source, gray, ColorConversionCodes.BGR2GRAY)
                     Dim level As Double = Math.Max(1, Math.Min(254, parameter))
-                    Cv2.Threshold(gray, result, level, 255, ThresholdTypes.Binary)
+                    Dim bw As New Mat()
+                    Cv2.Threshold(gray, bw, level, 255, ThresholdTypes.Binary)
+                    Cv2.CvtColor(bw, result, ColorConversionCodes.GRAY2BGR)
+                    bw.Dispose()
                     gray.Dispose()
 
                 Case "Negative (Invert)"
@@ -194,7 +200,11 @@ Friend NotInheritable Class VisionEngine
         End If
 
         Using gray As New Mat()
-            Cv2.CvtColor(frame, gray, ColorConversionCodes.BGR2GRAY)
+            If frame.Channels() = 1 Then
+                frame.CopyTo(gray)
+            Else
+                Cv2.CvtColor(frame, gray, ColorConversionCodes.BGR2GRAY)
+            End If
             Cv2.EqualizeHist(gray, gray)
             Dim faces() As Rect = _cascade.DetectMultiScale(gray, 1.1, 5, 0, New OpenCvSharp.Size(80, 80))
             faceCount = faces.Length

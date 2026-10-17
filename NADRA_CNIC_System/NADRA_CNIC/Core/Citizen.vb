@@ -125,7 +125,11 @@ Friend NotInheritable Class CitizenStore
     ''' <summary>Creates a brand new, check-digit-correct CNIC for the given region code.</summary>
     Public Shared Function GenerateCnic(regionCode As String) As String
         Dim rng As New Random()
-        Dim stem As String = regionCode.PadRight(5, "0").Substring(0, 5)
+        Dim cleanRegion As String = DigitsOnly(regionCode)
+        If String.IsNullOrEmpty(cleanRegion) OrElse cleanRegion.StartsWith("0") Then
+            cleanRegion = "35202"
+        End If
+        Dim stem As String = cleanRegion.PadRight(5, "0").Substring(0, 5)
         For i As Integer = 1 To 7
             stem &= ChrW(CInt(AscW("0"c)) + rng.Next(0, 10))
         Next
@@ -209,13 +213,23 @@ Friend NotInheritable Class CitizenStore
         Dim sql As String = "SELECT * FROM Citizens"
         Dim hasTerm As Boolean = Not String.IsNullOrWhiteSpace(term)
         If hasTerm Then
-            sql &= " WHERE Cnic LIKE @t OR Name LIKE @t OR FatherName LIKE @t OR City LIKE @t OR Province LIKE @t"
+            sql &= " WHERE Cnic LIKE @c OR Name LIKE @n OR FatherName LIKE @f OR City LIKE @ci OR Province LIKE @p"
         End If
         sql &= " ORDER BY Name"
 
         Using cn As OleDbConnection = Db.OpenConnection()
             Using cmd As New OleDbCommand(sql, cn)
-                If hasTerm Then cmd.Parameters.Add(Db.Param("@t", "%" & term.Trim() & "%"))
+                If hasTerm Then
+                    Dim cleanTerm As String = term.Trim()
+                    Dim digits As String = DigitsOnly(cleanTerm)
+                    Dim cnicPattern As String = "%" & If(digits.Length > 0, digits, cleanTerm) & "%"
+                    Dim textPattern As String = "%" & cleanTerm & "%"
+                    cmd.Parameters.Add(Db.Param("@c", cnicPattern))
+                    cmd.Parameters.Add(Db.Param("@n", textPattern))
+                    cmd.Parameters.Add(Db.Param("@f", textPattern))
+                    cmd.Parameters.Add(Db.Param("@ci", textPattern))
+                    cmd.Parameters.Add(Db.Param("@p", textPattern))
+                End If
                 Using dr As OleDbDataReader = cmd.ExecuteReader()
                     While dr.Read()
                         list.Add(ReaderToCitizen(dr))
@@ -373,12 +387,7 @@ Friend NotInheritable Class CitizenStore
         s.Other = Math.Max(0, s.Total - s.Male - s.Female)
         s.Verified = Db.ScalarInt("SELECT COUNT(*) FROM Citizens WHERE IsVerified = True")
         s.Pending = Math.Max(0, s.Total - s.Verified)
-        Using cn As OleDbConnection = Db.OpenConnection()
-            Using cmd As New OleDbCommand("SELECT COUNT(*) FROM Citizens WHERE CreatedOn >= @d", cn)
-                cmd.Parameters.Add(Db.Param("@d", Date.Today))
-                s.RegisteredToday = CInt(cmd.ExecuteScalar())
-            End Using
-        End Using
+        s.RegisteredToday = Db.ScalarInt("SELECT COUNT(*) FROM Citizens WHERE CreatedOn >= @d", Db.Param("@d", Date.Today))
         Return s
     End Function
 

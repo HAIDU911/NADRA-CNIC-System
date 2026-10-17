@@ -62,18 +62,25 @@ Public Class frmStats
         ser.Label = "#VALX: #VAL (#PERCENT{P0})"
         ser.Font = New Font("Segoe UI", 8.5F, FontStyle.Bold)
 
-        For Each row As DataRow In dt.Rows
-            Dim label As String = CStr(row("LabelName"))
-            Dim count As Integer = CInt(row("Cnt"))
-            Dim pointIndex As Integer = ser.Points.AddXY(label, count)
-            If label = "Male" Then
-                ser.Points(pointIndex).Color = Color.FromArgb(0, 105, 62)
-            ElseIf label = "Female" Then
-                ser.Points(pointIndex).Color = Color.FromArgb(218, 185, 60)
-            Else
-                ser.Points(pointIndex).Color = Color.FromArgb(140, 150, 145)
-            End If
-        Next
+        If dt.Rows.Count = 0 Then
+            Dim emptyIdx As Integer = ser.Points.AddXY("No Data", 1)
+            ser.Points(emptyIdx).Color = Color.FromArgb(210, 220, 215)
+            ser.Points(emptyIdx).LegendText = "No records"
+            ser.IsValueShownAsLabel = False
+        Else
+            For Each row As DataRow In dt.Rows
+                Dim label As String = CStr(row("LabelName"))
+                Dim count As Integer = CInt(row("Cnt"))
+                Dim pointIndex As Integer = ser.Points.AddXY(label, count)
+                If label = "Male" Then
+                    ser.Points(pointIndex).Color = Color.FromArgb(0, 105, 62)
+                ElseIf label = "Female" Then
+                    ser.Points(pointIndex).Color = Color.FromArgb(218, 185, 60)
+                Else
+                    ser.Points(pointIndex).Color = Color.FromArgb(140, 150, 145)
+                End If
+            Next
+        End If
         chartGender.Series.Add(ser)
         chartGender.Legends.Add("Legend")
         chartGender.Legends(0).Docking = Docking.Bottom
@@ -87,9 +94,14 @@ Public Class frmStats
         ser.ChartType = SeriesChartType.Column
         ser.IsValueShownAsLabel = True
         ser.Color = Color.FromArgb(0, 120, 70)
-        For Each row As DataRow In dt.Rows
-            ser.Points.AddXY(CStr(row("LabelName")), CInt(row("Cnt")))
-        Next
+        If dt.Rows.Count = 0 Then
+            ser.Points.AddXY("No Data", 0)
+            ser.IsValueShownAsLabel = False
+        Else
+            For Each row As DataRow In dt.Rows
+                ser.Points.AddXY(CStr(row("LabelName")), CInt(row("Cnt")))
+            Next
+        End If
         chartProvince.Series.Add(ser)
 
         With chartProvince.ChartAreas(0)

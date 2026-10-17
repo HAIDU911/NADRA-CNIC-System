@@ -67,6 +67,7 @@ Module Program
         Dim loginMessage As String = ""
         Check("officer login admin / nadra123", Auth.ValidateCredentials("admin", "nadra123", loginMessage) IsNot Nothing)
         Check("officer login officer / officer123", Auth.ValidateCredentials("officer", "officer123", loginMessage) IsNot Nothing)
+        Check("officer login operator / operator123", Auth.ValidateCredentials("operator", "operator123", loginMessage) IsNot Nothing)
         Check("wrong password rejected", Auth.ValidateCredentials("admin", "wrong", loginMessage) Is Nothing)
         Check("password is not stored as plain text", File.ReadAllText(AppPaths.DatabaseFile).IndexOf("nadra123") < 0)
 
@@ -98,6 +99,9 @@ Module Program
                         Using output As OpenCvSharp.Mat = engine.ApplyEffect(frame, effect, 9, True)
                             Check("effect '" & effect & "'", output IsNot Nothing AndAlso Not output.Empty(),
                                   output.Width.ToString() & "x" & output.Height.ToString())
+                            Dim facesOnEffect As Integer = 0
+                            Dim ranFace As Boolean = engine.DetectAndDrawFaces(output, facesOnEffect)
+                            Check("face detection on effect '" & effect & "'", ranFace)
                         End Using
                     Next
 

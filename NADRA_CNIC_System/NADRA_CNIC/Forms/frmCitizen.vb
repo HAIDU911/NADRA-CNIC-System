@@ -16,6 +16,7 @@ Public Class frmCitizen
     Private _photoPath As String = ""
     Private _loading As Boolean = False
     Private _filter As String = ""
+    Private _currentCitizen As Citizen = Nothing
 
     ' ------------------------------------------------------------------ start-up
 
@@ -174,6 +175,7 @@ Public Class frmCitizen
     End Sub
 
     Private Sub LoadInto(c As Citizen)
+        _currentCitizen = c
         mtbCnic.Text = CitizenStore.FormatCnic(c.Cnic)
         txtName.Text = c.Name
         txtFather.Text = c.FatherName
@@ -254,11 +256,12 @@ Public Class frmCitizen
         Next
         c.Documents = docs.ToString()
 
-        c.CreatedOn = If(_mode = "add", Now, Now)
+        c.CreatedOn = If(_currentCitizen IsNot Nothing, _currentCitizen.CreatedOn, Now)
         Return c
     End Function
 
     Private Sub ClearForm()
+        _currentCitizen = Nothing
         _loading = True
         Try
             mtbCnic.Clear()
@@ -306,14 +309,22 @@ Public Class frmCitizen
                 lblMode.Text = "NEW RECORD"
                 lblMode.BackColor = UiTheme.Gold
                 lblMode.ForeColor = UiTheme.Ink
+                mtbCnic.ReadOnly = False
+                btnGenCnic.Enabled = True
+                tipCitizen.SetToolTip(mtbCnic, "13 digit CNIC - the last digit is a check digit")
             Case "edit"
                 lblMode.Text = "EDIT / VIEW RECORD"
                 lblMode.BackColor = UiTheme.BrightGreen
                 lblMode.ForeColor = Color.White
+                mtbCnic.ReadOnly = True
+                btnGenCnic.Enabled = False
+                tipCitizen.SetToolTip(mtbCnic, "CNIC is primary key and locked in edit mode. Click New Record to register another CNIC.")
             Case Else
                 lblMode.Text = "VIEW"
                 lblMode.BackColor = UiTheme.BrightGreen
                 lblMode.ForeColor = Color.White
+                mtbCnic.ReadOnly = True
+                btnGenCnic.Enabled = False
         End Select
     End Sub
 
@@ -544,6 +555,7 @@ Public Class frmCitizen
             Return
         End If
         Dim lab As frmVisual = main.OpenVisualLab()
+        RemoveHandler lab.PhotoCaptured, AddressOf OnPhotoCaptured
         AddHandler lab.PhotoCaptured, AddressOf OnPhotoCaptured
         lab.FocusCaptureMode()
     End Sub

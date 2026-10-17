@@ -233,10 +233,14 @@ Friend NotInheritable Class Db
 
     Private Shared Sub SeedData()
         ' --- officer accounts -------------------------------------------------
-        Dim officerCount As Integer = ScalarInt("SELECT COUNT(*) FROM Officers")
-        If officerCount = 0 Then
+        If ScalarInt("SELECT COUNT(*) FROM Officers WHERE Username = 'admin'") = 0 Then
             InsertOfficer("admin", "nadra123", "Muhammad Aslam", "System Administrator", "Administrator")
+        End If
+        If ScalarInt("SELECT COUNT(*) FROM Officers WHERE Username = 'officer'") = 0 Then
             InsertOfficer("officer", "officer123", "Sana Tariq", "Verification Officer", "Officer")
+        End If
+        If ScalarInt("SELECT COUNT(*) FROM Officers WHERE Username = 'operator'") = 0 Then
+            InsertOfficer("operator", "operator123", "Tariq Mehmood", "Data Entry Operator", "Operator")
         End If
 
         ' --- sample citizens --------------------------------------------------
@@ -390,6 +394,7 @@ Friend NotInheritable Class Db
 
     ''' <summary>Copies the live database to the location chosen by the officer.</summary>
     Public Shared Sub BackupTo(targetFile As String)
+        OleDbConnection.ReleaseObjectPool()
         File.Copy(AppPaths.DatabaseFile, targetFile, True)
         LogActivity(If(Session.Current IsNot Nothing, Session.Current.Username, "system"),
                     "BACKUP", "Database backed up to " & targetFile)
@@ -411,6 +416,9 @@ Friend NotInheritable Class Db
             Return False
         End If
 
+        OleDbConnection.ReleaseObjectPool()
+        GC.Collect()
+        GC.WaitForPendingFinalizers()
         File.Copy(sourceFile, AppPaths.DatabaseFile, True)
         LogActivity(If(Session.Current IsNot Nothing, Session.Current.Username, "system"),
                     "RESTORE", "Database restored from " & sourceFile)

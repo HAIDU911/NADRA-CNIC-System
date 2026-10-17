@@ -277,10 +277,21 @@ Friend NotInheritable Class UiTheme
         Return bmp
     End Function
 
+    <System.Runtime.InteropServices.DllImport("user32.dll", CharSet:=System.Runtime.InteropServices.CharSet.Auto)>
+    Private Shared Function DestroyIcon(handle As IntPtr) As Boolean
+    End Function
+
     ''' <summary>Converts a drawn glyph into an Icon for the window / notification area.</summary>
     Public Shared Function MakeWindowIcon() As Icon
         Using bmp As Bitmap = MakeLogo(32)
-            Return Icon.FromHandle(bmp.GetHicon())
+            Dim hIcon As IntPtr = bmp.GetHicon()
+            Try
+                Using tempIcon As Icon = Icon.FromHandle(hIcon)
+                    Return DirectCast(tempIcon.Clone(), Icon)
+                End Using
+            Finally
+                DestroyIcon(hIcon)
+            End Try
         End Using
     End Function
 
