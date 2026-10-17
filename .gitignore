@@ -1,0 +1,21 @@
+# build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userprefs
+*.cache
+
+# local helpers used while developing (screen captures, build logs)
+shots/
+tools/
+build*.log
+
+# runtime data is created in %APPDATA%, never committed
+*.mdb
+*.ldb
