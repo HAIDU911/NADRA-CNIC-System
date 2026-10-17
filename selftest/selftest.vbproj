@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x86</PlatformTarget>
+    <RootNamespace></RootNamespace>
+    <StartupObject>Program</StartupObject>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionStrict>Off</OptionStrict>
+    <OptionInfer>On</OptionInfer>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <LangVersion>latest</LangVersion>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\NADRA_CNIC_System\NADRA_CNIC\Core\AppPaths.vb" />
+    <Compile Include="..\NADRA_CNIC_System\NADRA_CNIC\Core\Auth.vb" />
+    <Compile Include="..\NADRA_CNIC_System\NADRA_CNIC\Core\Citizen.vb" />
+    <Compile Include="..\NADRA_CNIC_System\NADRA_CNIC\Core\Db.vb" />
+    <Compile Include="..\NADRA_CNIC_System\NADRA_CNIC\Core\UiTheme.vb" />
+    <Compile Include="..\NADRA_CNIC_System\NADRA_CNIC\Core\VisionEngine.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="OpenCvSharp">
+      <HintPath>..\NADRA_CNIC_System\packages\OpenCvSharp4.4.11.0.20250506\lib\net48\OpenCvSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenCvSharp.Extensions">
+      <HintPath>..\NADRA_CNIC_System\packages\OpenCvSharp4.Extensions.4.11.0.20250506\lib\net48\OpenCvSharp.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Buffers">
+      <HintPath>..\NADRA_CNIC_System\packages\System.Buffers.4.6.0\lib\net462\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory">
+      <HintPath>..\NADRA_CNIC_System\packages\System.Memory.4.6.0\lib\net462\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors">
+      <HintPath>..\NADRA_CNIC_System\packages\System.Numerics.Vectors.4.6.0\lib\net462\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>..\NADRA_CNIC_System\packages\System.Runtime.CompilerServices.Unsafe.6.1.0\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\NADRA_CNIC_System\packages\OpenCvSharp4.runtime.win.4.11.0.20250506\runtimes\win-x86\native\OpenCvSharpExtern.dll">
+      <Link>OpenCvSharpExtern.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\NADRA_CNIC_System\NADRA_CNIC\Data\haarcascade_frontalface_default.xml">
+      <Link>Data\haarcascade_frontalface_default.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
