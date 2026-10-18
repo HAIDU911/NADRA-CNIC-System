@@ -41,14 +41,16 @@ Public Class frmStats
 
     Private Sub PrepareChart(ch As Chart, title As String)
         ch.Series.Clear()
+        For Each t As Title In ch.Titles
+            If t.Font IsNot Nothing Then t.Font.Dispose()
+        Next
         ch.Titles.Clear()
         ch.Legends.Clear()
         If ch.ChartAreas.Count = 0 Then ch.ChartAreas.Add("Main")
         ch.ChartAreas(0).BackColor = Color.White
 
-        Using f As New Font("Segoe UI", 11.0F, FontStyle.Bold)
-            ch.Titles.Add(New Title(title, Docking.Top, f, UiTheme.DeepGreen))
-        End Using
+        Dim f As New Font("Segoe UI", 11.0F, FontStyle.Bold)
+        ch.Titles.Add(New Title(title, Docking.Top, f, UiTheme.DeepGreen))
     End Sub
 
     Private Sub BuildGenderChart()
